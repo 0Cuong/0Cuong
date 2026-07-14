@@ -1,0 +1,57 @@
+{
+  "recipient": "Xuân Nghi",
+  "title": "A Letter Across The Universe",
+  "signature": "D E V  B Y  C U O N G",
+  "music": "/music/song.mp3",
+  "letter": [
+    {
+      "animation": "fade",
+      "text": [
+        "Hi vui khi xnghi đọc cái này"
+      ]
+    },
+    {
+      "animation": "glow",
+      "text": [
+        "MCuong làm 1 chút coding cho em",
+        "Hope so em sẽ thích nó"
+      ]
+    },
+    {
+      "animation": "float",
+      "text": [
+        "Giữa hàng tỷ người"
+      ]
+    },
+    {
+      "animation": "starlight",
+      "text": [
+        "Giữa hàng tỷ vì sao"
+      ]
+    },
+    {
+      "animation": "whisper",
+      "text": [
+        "Anh vẫn tìm thấy em."
+      ]
+    }
+  ],
+  "ending": [
+    [
+      "Trong vô số thế giới"
+    ],
+    [
+      "Trong vô số khả năng"
+    ],
+    [
+      "Trong vô số cuộc gặp gỡ"
+    ],
+    [
+      "Anh vẫn gặp được em."
+    ],
+    [
+      "Và đó là điều đẹp nhất",
+      "từng xảy ra với anh."
+    ]
+  ]
+}
