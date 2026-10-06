@@ -2,7 +2,7 @@
   "recipient": "Xuân Nghi",
   "title": "A Letter Across The Universe",
   "signature": "D E V  B Y  C U O N G",
-  "music": "/music/song.mp3",
+  "music": "./music/song.mp3",
   "letter": [
     {
       "animation": "fade",
