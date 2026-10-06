@@ -1,8 +1,11 @@
 {
-  "name": "universe for my gf",
-  "description": "An interactive 3D universe love letter and starry celestial romantic experience.",
+  "name": "A Letter Across The Universe",
+  "description": "An interactive celestial love letter created for Xuân Nghi.",
   "permissions": [],
   "capabilities": [
-    "INTERACTIVE_CELESTIAL_WEB_EXPERIENCE"
+    "INTERACTIVE_CELESTIAL_WEB_EXPERIENCE",
+    "LOCAL_AUDIO_PLAYBACK",
+    "LOCAL_PORTRAIT_REVEAL",
+    "REDUCED_MOTION_SUPPORT"
   ]
 }

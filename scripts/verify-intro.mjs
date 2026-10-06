@@ -41,6 +41,7 @@ for (const [name, check] of jsInvariants) {
 
 const cssInvariants = [
   ["Hero layout", /\.intro-hero\{[^}]*min-height:100vh/],
+  ["Hero accepts pointer input", /\.intro-hero\{[^}]*pointer-events:auto/],
   ["Hero hierarchy", /\.intro-hero__title-name\{[^}]*font-size:clamp/],
   ["Hero visual", /\.intro-hero__ring--outer/],
   ["CTA hover", /\.intro-hero:hover \.intro-hero__cta/],
