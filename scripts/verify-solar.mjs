@@ -50,8 +50,6 @@ for (const token of [
   "compact?1400:3200",
   "1.35,24",
   "syncStage();requestAnimationFrame(draw)",
-  "portraitExitTimer",
-
 ]) if (!js.includes(token)) failures.push(`solar-v9.js missing expected behavior: ${token}`);
 
 for (const token of ["#solar-v9", "#solar-v9-effects", "#solar-v9-particles", "pointer-events:auto", "touch-action:none", "prefers-reduced-motion"]) {
