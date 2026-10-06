@@ -473,13 +473,14 @@ export function createCameraInteraction() {
     try {
       state.context = gsap.context(() => {}, ui.root);
       if (!state.reduced) {
-        gsap.fromTo(ui.launcher, { opacity: 0, y: 8 }, {
+        const animate = () => gsap.fromTo(ui.launcher, { opacity: 0, y: 8 }, {
           opacity: 1,
           y: 0,
           duration: MOTION.reveal,
           ease: MOTION.easeOut,
           overwrite: true,
         });
+        state.context ? state.context.add(animate) : animate();
       } else {
         gsap.set(ui.launcher, { opacity: 1, y: 0 });
       }
@@ -514,7 +515,17 @@ export function createCameraInteraction() {
     window.removeEventListener("pagehide", stopCamera);
     window.removeEventListener("beforeunload", stopCamera);
     state.context?.revert?.();
-    state.gsap?.killTweensOf(ui.root);
+    state.gsap?.killTweensOf([
+      ui.root,
+      ui.launcher,
+      ui.panel,
+      ui.frame,
+      ui.statusDot,
+      ui.statusRow,
+      ui.privacy,
+      ui.action,
+      ui.note,
+    ]);
     if (window.__UNIVERSE_CAMERA__) delete window.__UNIVERSE_CAMERA__;
     ui.root.remove();
   };
