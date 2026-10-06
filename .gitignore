@@ -1,0 +1,26 @@
+# Node / local tooling
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Local environment
+.env
+.env.*
+!.env.example
+
+# Local/editor/OS noise
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Generated local output
+coverage/
+dist/
+_site/
+
+# Temporary files
+*.tmp
+*.temp
