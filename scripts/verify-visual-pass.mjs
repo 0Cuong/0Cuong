@@ -18,7 +18,7 @@ const required = [
   ["reduced solar clutter", bundle.includes("const i=se.useRef(null),e=1800")],
   ["soft sun lighting", bundle.includes("intensity:520")],
   ["soft bloom threshold", bundle.includes("luminanceThreshold:.58") && bundle.includes("luminanceSmoothing:.74")],
-  ["Pages asset cache v5", html.includes("nebula-v5")]
+  ["Pages asset cache v6", html.includes("nebula-v6")]
 ];
 
 const failed = required.filter(([, ok]) => !ok).map(([name]) => name);
