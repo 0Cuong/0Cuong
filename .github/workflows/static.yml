@@ -33,6 +33,9 @@ jobs:
       - name: Verify intro hero
         run: node scripts/verify-intro.mjs
 
+      - name: Verify experience layer
+        run: node scripts/verify-experience.mjs
+
       - name: Verify server configuration
         run: node scripts/verify-server-config.mjs
 
