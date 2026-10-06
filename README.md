@@ -175,3 +175,8 @@ A curated view of tools and runtimes used across active projects:
 <a href="#-about">▲ Back to top</a>
 
 </div>
+
+
+## Cloudflare Workers deployment
+
+The site is deployed as static assets from the repository root. Workers Builds should use the repository Wrangler configuration (`wrangler.jsonc`) and the deploy command `npm run deploy` so the committed configuration and asset exclusions are honored.
