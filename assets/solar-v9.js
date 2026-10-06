@@ -216,19 +216,13 @@
       const s=point([0,0,0],t.view,t.proj),gr=fctx.createRadialGradient(s[0],s[1],0,s[0],s[1],Math.min(state.width,state.height)*.22);gr.addColorStop(0,"rgba(255,255,230,.30)");gr.addColorStop(.14,"rgba(255,196,95,.15)");gr.addColorStop(.48,"rgba(255,130,30,.05)");gr.addColorStop(1,"rgba(255,80,20,0)");fctx.fillStyle=gr;fctx.fillRect(0,0,state.width,state.height);
       if(!compact){fctx.font="500 8px ui-monospace,SFMono-Regular,Menlo,monospace";for(const p of planets){const sp=point(orbit(p,state.simTime),t.view,t.proj);if(sp[2]<1) {fctx.fillStyle="rgba(255,255,255,.22)";fctx.fillText(p.name.toUpperCase(),sp[0]+8,sp[1]-7);}}}
     }
-    drawPortrait(now);requestAnimationFrame(draw);
+    drawPortrait(now);syncStage();requestAnimationFrame(draw);
   };
   let syncAt=0;
   const syncStage=()=>{
-    if(performance.now()-syncAt<180)return;syncAt=performance.now();
-    const intro=!!document.querySelector(".intro-hero"),portrait=!!document.querySelector(".portrait-reveal");
-    state.intro=intro;state.portrait=portrait;
-    solar.classList.toggle("is-active",!intro);solar.classList.toggle("is-interactive",!intro&&!portrait);
-    fx.classList.toggle("is-active",!intro&&!portrait);particles.classList.toggle("is-active",!intro&&portrait);
-    hud.classList.toggle("is-visible",!intro&&!portrait);status.classList.toggle("is-visible",!intro&&!portrait);hint.classList.toggle("is-visible",!intro&&!portrait&&!coarse);
-    const stage=portrait?"PORTRAIT":intro?"INTRO":"SYSTEM";
-    if(stage!==state.previousStage){state.previousStage=stage;if(portrait){state.portraitStarted=performance.now();makePortrait().catch(()=>{});}}
-    updateUI();
+    if(performance.now()-syncAt<180)return;
+    syncAt=performance.now();
+    sync();
   };
   syncStage();new MutationObserver(syncStage).observe(document.body,{childList:true,subtree:true});setInterval(syncStage,700);
   requestAnimationFrame(draw);
