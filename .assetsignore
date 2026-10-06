@@ -1,13 +1,14 @@
-# Never publish dependencies or repository/tooling internals as static assets
-node_modules/
-.git/
-.github/
-scripts/
-coverage/
-dist/
-_site/
+# Cloudflare Workers static asset allowlist exclusions
+**/node_modules
+**/.git
+**/.github
+**/scripts
+**/coverage
+**/dist
+**/_site
+**/.wrangler
 
-# Package/build metadata
+# Repository/tooling files
 package.json
 package-lock.json
 npm-shrinkwrap.json
@@ -17,10 +18,11 @@ bun.lock
 wrangler.json
 wrangler.jsonc
 wrangler.toml
-
-# Local/runtime-only files
+README.md
 server.js
 *.log
+
+# Environment files
 .env
 .env.*
 !.env.example
