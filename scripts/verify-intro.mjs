@@ -1,4 +1,5 @@
 import { existsSync, readFileSync, statSync } from "node:fs";
+import { spawnSync } from "node:child_process";
 import { resolve } from "node:path";
 
 const root = process.cwd();
@@ -7,6 +8,14 @@ const cssPath = resolve(root, "assets", "index-cyapdwvW.css");
 const htmlPath = resolve(root, "index.html");
 
 const failures = [];
+const syntaxCheck = existsSync(bundlePath)
+  ? spawnSync(process.execPath, ["--check", bundlePath], { encoding: "utf8" })
+  : null;
+
+if (syntaxCheck && syntaxCheck.status !== 0) {
+  failures.push(`Main bundle JavaScript syntax check failed: ${syntaxCheck.stderr?.trim() || "unknown parser error"}`);
+}
+
 
 for (const file of [bundlePath, cssPath, htmlPath]) {
   if (!existsSync(file)) failures.push(`Missing required intro artifact: ${file}`);
