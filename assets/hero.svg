@@ -1,0 +1,130 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 250" width="100%" height="auto" fill="none">
+  <defs>
+    <!-- Background Gradients -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a0e17"/>
+      <stop offset="50%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#050811"/>
+    </linearGradient>
+
+    <!-- Accent Glows -->
+    <radialGradient id="glowCyan" cx="15%" cy="20%" r="45%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#38bdf8" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowIndigo" cx="85%" cy="80%" r="50%">
+      <stop offset="0%" stop-color="#6366f1" stop-opacity="0.16"/>
+      <stop offset="100%" stop-color="#6366f1" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Subtle Grid Pattern -->
+    <pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse">
+      <path d="M 24 0 L 0 0 0 24" fill="none" stroke="#38bdf8" stroke-width="0.75" stroke-opacity="0.06"/>
+    </pattern>
+
+    <!-- Linear Border Gradient -->
+    <linearGradient id="borderGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.4"/>
+      <stop offset="50%" stop-color="#1e293b" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#6366f1" stop-opacity="0.4"/>
+    </linearGradient>
+  </defs>
+
+  <style>
+    .font-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+    .font-sans { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    .title { font-weight: 800; font-size: 38px; fill: #f8fafc; letter-spacing: -0.03em; }
+    .badge-text { font-size: 11px; fill: #38bdf8; font-weight: 600; letter-spacing: 0.06em; }
+    .subtitle { font-size: 15px; fill: #94a3b8; font-weight: 400; }
+    .terminal-bar { font-size: 11px; fill: #64748b; }
+    .chip-text { font-size: 11px; fill: #cbd5e1; font-weight: 500; }
+    .accent-cyan { fill: #38bdf8; }
+    .metric-val { font-size: 13px; font-weight: 700; fill: #f1f5f9; }
+    .metric-lbl { font-size: 10px; fill: #64748b; letter-spacing: 0.05em; text-transform: uppercase; }
+  </style>
+
+  <!-- Container Box with Rounded Corners and Subtle Border -->
+  <rect x="1" y="1" width="878" height="248" rx="14" fill="url(#bgGrad)" stroke="url(#borderGrad)" stroke-width="1.5"/>
+  <rect x="1" y="1" width="878" height="248" rx="14" fill="url(#grid)"/>
+  <rect x="1" y="1" width="878" height="248" rx="14" fill="url(#glowCyan)"/>
+  <rect x="1" y="1" width="878" height="248" rx="14" fill="url(#glowIndigo)"/>
+
+  <!-- Top Terminal Window Bar -->
+  <line x1="1" y1="36" x2="879" y2="36" stroke="#1e293b" stroke-width="1"/>
+  <circle cx="24" cy="18" r="4.5" fill="#ef4444" opacity="0.8"/>
+  <circle cx="38" cy="18" r="4.5" fill="#f59e0b" opacity="0.8"/>
+  <circle cx="52" cy="18" r="4.5" fill="#10b981" opacity="0.8"/>
+
+  <text x="76" y="22" class="font-mono terminal-bar">0Cuong@github: ~ / profile</text>
+
+  <!-- Right status indicator -->
+  <circle cx="810" cy="18" r="3.5" fill="#10b981"/>
+  <text x="822" y="22" class="font-mono terminal-bar" fill="#10b981">ACTIVE</text>
+
+  <!-- Section Badge -->
+  <g transform="translate(36, 62)">
+    <rect x="0" y="0" width="188" height="22" rx="4" fill="#0369a1" fill-opacity="0.2" stroke="#38bdf8" stroke-opacity="0.35" stroke-width="1"/>
+    <text x="10" y="15" class="font-mono badge-text">// DEVELOPER &amp; BUILDER</text>
+  </g>
+
+  <!-- Main Name & Identity -->
+  <text x="36" y="122" class="font-sans title">0Cuong<tspan fill="#38bdf8">.</tspan></text>
+
+  <!-- Subtitle / Core Positioning -->
+  <text x="36" y="148" class="font-sans subtitle">Building web apps, developer tools, and small experiments.</text>
+
+  <!-- Tech Stack Chips Row -->
+  <g transform="translate(36, 175)">
+    <!-- Chip 1: TypeScript -->
+    <rect x="0" y="0" width="94" height="26" rx="5" fill="#1e293b" fill-opacity="0.75" stroke="#334155" stroke-width="1"/>
+    <circle cx="12" cy="13" r="3" fill="#3178c6"/>
+    <text x="22" y="17" class="font-mono chip-text">TypeScript</text>
+
+    <!-- Chip 2: React + Vite -->
+    <rect x="102" y="0" width="102" height="26" rx="5" fill="#1e293b" fill-opacity="0.75" stroke="#334155" stroke-width="1"/>
+    <circle cx="114" cy="13" r="3" fill="#61dafb"/>
+    <text x="124" y="17" class="font-mono chip-text">React / Vite</text>
+
+    <!-- Chip 3: Node.js -->
+    <rect x="212" y="0" width="76" height="26" rx="5" fill="#1e293b" fill-opacity="0.75" stroke="#334155" stroke-width="1"/>
+    <circle cx="224" cy="13" r="3" fill="#68a063"/>
+    <text x="234" y="17" class="font-mono chip-text">Node.js</text>
+
+    <!-- Chip 4: Cloudflare D1/R2 -->
+    <rect x="296" y="0" width="138" height="26" rx="5" fill="#1e293b" fill-opacity="0.75" stroke="#334155" stroke-width="1"/>
+    <circle cx="308" cy="13" r="3" fill="#f38020"/>
+    <text x="318" y="17" class="font-mono chip-text">Cloudflare D1/R2</text>
+
+    <!-- Chip 5: discord.js -->
+    <rect x="442" y="0" width="96" height="26" rx="5" fill="#1e293b" fill-opacity="0.75" stroke="#334155" stroke-width="1"/>
+    <circle cx="454" cy="13" r="3" fill="#5865f2"/>
+    <text x="464" y="17" class="font-mono chip-text">discord.js</text>
+  </g>
+
+  <!-- Right Side: Architecture & Focus Panel -->
+  <g transform="translate(630, 58)">
+    <rect x="0" y="0" width="214" height="154" rx="8" fill="#0b1329" fill-opacity="0.7" stroke="#1e293b" stroke-width="1"/>
+
+    <!-- Header line -->
+    <text x="16" y="24" class="font-mono metric-lbl">PRIMARY FOCUS</text>
+    <line x1="16" y1="34" x2="198" y2="34" stroke="#1e293b" stroke-width="1"/>
+
+    <!-- Point 1: Recovery-first -->
+    <circle cx="22" cy="52" r="3" fill="#38bdf8"/>
+    <text x="32" y="55" class="font-mono metric-val">Recovery-first</text>
+    <text x="32" y="68" class="font-sans" font-size="10" fill="#94a3b8">Local mode &amp; offline data</text>
+
+    <!-- Point 2: Edge compute -->
+    <circle cx="22" cy="90" r="3" fill="#f38020"/>
+    <text x="32" y="93" class="font-mono metric-val">Edge &amp; Cloudflare</text>
+    <text x="32" y="106" class="font-sans" font-size="10" fill="#94a3b8">Workers Assets, D1 SQL, R2</text>
+
+    <!-- Point 3: Audio tooling -->
+    <circle cx="22" cy="128" r="3" fill="#a855f7"/>
+    <text x="32" y="131" class="font-mono metric-val">Audio Streaming</text>
+    <text x="32" y="144" class="font-sans" font-size="10" fill="#94a3b8">Discord voice pipelines &amp; FFmpeg</text>
+  </g>
+
+  <!-- Bottom Accent Line -->
+  <line x1="36" y1="222" x2="844" y2="222" stroke="#1e293b" stroke-width="0.75" stroke-dasharray="4 4"/>
+</svg>
