@@ -6,6 +6,14 @@
     "enabled": true
   },
   "assets": {
-    "directory": "."
+    "directory": ".",
+    "include": [
+      "index.html",
+      "assets/**",
+      "portrait/**",
+      "music/**",
+      "love-letter.json",
+      "metadata.json"
+    ]
   }
 }
