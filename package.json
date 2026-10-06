@@ -3,10 +3,14 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "node server.js",
     "start": "node server.js",
-    "build": "node -e \"console.log('Build complete')\""
+    "build": "node scripts/verify-static.mjs",
+    "check": "node scripts/verify-static.mjs"
   },
   "dependencies": {
     "express": "^4.21.2"
