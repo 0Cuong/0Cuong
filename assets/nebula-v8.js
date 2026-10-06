@@ -269,6 +269,7 @@
 
   const resizeObserver = new ResizeObserver(setSize);
   resizeObserver.observe(document.documentElement);
+  window.addEventListener("resize", setSize, { passive: true });
   setSize();
 
   setFormation(0, true);
@@ -280,10 +281,11 @@
 
     if (nextIntro !== state.intro) {
       state.intro = nextIntro;
-      canvas.classList.toggle("is-interactive", !nextIntro);
-      hud.classList.toggle("is-visible", !nextIntro);
-      hint.classList.toggle("is-visible", !nextIntro && !coarse);
     }
+    canvas.classList.toggle("is-active", !nextIntro);
+    canvas.classList.toggle("is-interactive", !nextIntro);
+    hud.classList.toggle("is-visible", !nextIntro);
+    hint.classList.toggle("is-visible", !nextIntro && !coarse);
 
     if (portrait !== state.portrait) {
       state.portrait = portrait;
