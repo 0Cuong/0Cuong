@@ -6,6 +6,8 @@ const requiredFiles = [
   'index.html',
   'assets/index-wDCBoduc.js',
   'assets/index-cyapdwvW.css',
+  'assets/experience-v7.js',
+  'assets/experience-v7.css',
   'portrait/girlfriend.jpg',
   'music/song.mp3',
   'love-letter.json',
@@ -34,6 +36,8 @@ if (existsSync(indexPath)) {
   const expectedRefs = [
     './assets/index-wDCBoduc.js',
     './assets/index-cyapdwvW.css',
+    './assets/experience-v7.js',
+    './assets/experience-v7.css',
   ];
 
   for (const ref of expectedRefs) {
@@ -50,6 +54,10 @@ if (existsSync(indexPath)) {
 
   if (!/<meta[^>]+name="description"/i.test(html)) {
     failures.push('index.html is missing a description meta tag.');
+  }
+
+  if (!/<noscript>/i.test(html)) {
+    failures.push('index.html is missing a no-JavaScript fallback.');
   }
 }
 
