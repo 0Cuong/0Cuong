@@ -87,7 +87,7 @@
   const FS_S="precision highp float;varying vec3 vNormal;varying vec3 vWorld;varying vec2 vUv;uniform vec3 uColor;uniform vec3 uLightDir;uniform float uType;uniform float uTime;uniform float uSun;float hash(vec3 p){p=fract(p*.3183099+.1);p*=17.;return fract(p.x*p.y*p.z*(p.x+p.y+p.z));}float noise(vec3 p){vec3 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);float n=mix(mix(mix(hash(i),hash(i+vec3(1,0,0)),f.x),mix(hash(i+vec3(0,1,0)),hash(i+vec3(1,1,0)),f.x),f.y),mix(mix(hash(i+vec3(0,0,1)),hash(i+vec3(1,0,1)),f.x),mix(hash(i+vec3(0,1,1)),hash(i+vec3(1,1,1)),f.x),f.y),f.z);return n;}float fbm(vec3 p){float v=0.,a=.5;for(int i=0;i<4;i++){v+=noise(p)*a;p*=2.02;a*=.5;}return v;}void main(){vec3 N=normalize(vNormal),L=normalize(uLightDir);float ndl=max(dot(N,L),0.),rim=pow(1.-max(dot(N,vec3(0,0,1)),0.),2.4),n=fbm(N*5.2+uTime*.012);vec3 b=uColor;if(uType<.5){b*=.72+.45*n;b*=1.-smoothstep(.42,.72,fbm(N*18.))*.28;}else if(uType<1.5){b=mix(b*.72,vec3(1,.82,.57),fbm(N*7.+vec3(0,uTime*.02,0))*.35);}else if(uType<2.5){float land=fbm(N*7.+vec3(4,0,2)),cloud=smoothstep(.68,.82,fbm(N*12.-uTime*.025));b=mix(vec3(.035,.18,.44),vec3(.08,.30,.10),smoothstep(.52,.63,land));b=mix(b,vec3(.82,.88,.90),cloud*.38);}else if(uType<3.5){b=mix(vec3(.34,.10,.055),vec3(.78,.31,.16),.42+fbm(N*9.)*.28);b=mix(b,vec3(.8,.72,.62),smoothstep(.82,.98,abs(N.y))*.7);}else if(uType<4.5){float band=.5+.5*sin(vUv.y*94.2+n*4.),storm=smoothstep(.75,.95,fbm(N*10.+vec3(2,4,uTime*.015)));b=mix(vec3(.72,.43,.26),vec3(.92,.84,.65),band);b=mix(b,vec3(.52,.16,.08),storm*.55);}else if(uType<5.5){float band=.5+.5*sin(vUv.y*88.+n*3.);b=mix(vec3(.58,.42,.26),vec3(.92,.80,.59),band*.65+.2);}else if(uType<6.5){b=mix(vec3(.24,.58,.66),vec3(.66,.84,.84),(.5+.5*sin(vUv.y*50.+n*2.))*.18+.1);}else{b=mix(vec3(.06,.16,.58),vec3(.15,.42,.88),(.5+.5*sin(vUv.y*69.+n*3.))*.25+.08);}vec3 c=b*(.10+ndl*.88)+b*rim*.12;if(uSun>.5){c=vec3(1,.25,.03)*(.72+.14*sin(uTime*.7+n*13.)+n*.28);}gl_FragColor=vec4(c,1.);}";
   const VS_P="attribute vec3 aPosition;attribute float aSize;attribute float aTint;uniform mat4 uVp;uniform float uTime;varying float vTint;void main(){gl_Position=uVp*vec4(aPosition,1.);gl_PointSize=aSize*(1.+.25*sin(uTime*.4+aTint*12.));vTint=aTint;}";
   const FS_P="precision highp float;varying float vTint;void main(){vec2 p=gl_PointCoord*2.-1.;float a=smoothstep(1.,0.,dot(p,p));vec3 c=mix(vec3(.44,.56,.74),vec3(1.),vTint);gl_FragColor=vec4(c,a*.68);}";
-  const VS_R="attribute vec3 aPosition;uniform mat4 uMvp;void main(){gl_Position=uMvp*vec4(aPosition,1.);}";
+  const VS_R="attribute vec3 aPosition;uniform mat4 uMvp;varying float vR;void main(){vR=aPosition.x;gl_Position=uMvp*vec4(aPosition,1.);}";
   const FS_R="precision highp float;varying float vR;void main(){float p=abs(fract((vR-.2)*34.)-.5);float b=smoothstep(.48,.18,p);vec3 c=mix(vec3(.22,.20,.16),vec3(.78,.69,.53),b);gl_FragColor=vec4(c,.58*b);}";
 
   const compile=(type,src)=>{const s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw new Error(gl.getShaderInfoLog(s)||"shader");return s;};
@@ -194,12 +194,18 @@
     if(fctx){fctx.setTransform(state.dpr,0,0,state.dpr,0,0);fctx.clearRect(0,0,state.width,state.height);const s=point([0,0,0],t.view,t.proj),gr=fctx.createRadialGradient(s[0],s[1],0,s[0],s[1],Math.min(state.width,state.height)*.2);gr.addColorStop(0,"rgba(255,255,230,.30)");gr.addColorStop(.14,"rgba(255,196,95,.15)");gr.addColorStop(.48,"rgba(255,130,30,.05)");gr.addColorStop(1,"rgba(255,80,20,0)");fctx.fillStyle=gr;fctx.fillRect(0,0,state.width,state.height);}
     drawPortrait(now);sync();requestAnimationFrame(draw);
   };
-  let syncAt=0;const sync=()=>{if(performance.now()-syncAt<220)return;syncAt=performance.now();syncStage();};
-  function syncStage(){sync.__busy=true;sync.__fn();sync.__busy=false;}
-  sync.__fn=sync; // overwritten below
-  sync.__fn=()=>{const intro=!!document.querySelector(".intro-hero"),portrait=!!document.querySelector(".portrait-reveal");state.intro=intro;state.portrait=portrait;solar.classList.toggle("is-active",!intro);solar.classList.toggle("is-interactive",!intro&&!portrait);fx.classList.toggle("is-active",!intro&&!portrait);particles.classList.toggle("is-active",!intro&&portrait);hud.classList.toggle("is-visible",!intro&&!portrait);status.classList.toggle("is-visible",!intro&&!portrait);hint.classList.toggle("is-visible",!intro&&!portrait&&!coarse);const stage=portrait?"PORTRAIT":intro?"INTRO":"SYSTEM";if(stage!==state.previousStage){state.previousStage=stage;if(portrait){state.portraitStarted=performance.now();makePortrait().catch(()=>{});}}updateUI();};
-  syncStage();
-  new MutationObserver(()=>syncStage()).observe(document.body,{childList:true,subtree:true});
-  setInterval(syncStage,700);
+  let syncAt=0;
+  const syncStage=()=>{
+    if(performance.now()-syncAt<180)return;syncAt=performance.now();
+    const intro=!!document.querySelector(".intro-hero"),portrait=!!document.querySelector(".portrait-reveal");
+    state.intro=intro;state.portrait=portrait;
+    solar.classList.toggle("is-active",!intro);solar.classList.toggle("is-interactive",!intro&&!portrait);
+    fx.classList.toggle("is-active",!intro&&!portrait);particles.classList.toggle("is-active",!intro&&portrait);
+    hud.classList.toggle("is-visible",!intro&&!portrait);status.classList.toggle("is-visible",!intro&&!portrait);hint.classList.toggle("is-visible",!intro&&!portrait&&!coarse);
+    const stage=portrait?"PORTRAIT":intro?"INTRO":"SYSTEM";
+    if(stage!==state.previousStage){state.previousStage=stage;if(portrait){state.portraitStarted=performance.now();makePortrait().catch(()=>{});}}
+    updateUI();
+  };
+  syncStage();new MutationObserver(syncStage).observe(document.body,{childList:true,subtree:true});setInterval(syncStage,700);
   requestAnimationFrame(draw);
 })();
