@@ -1,0 +1,275 @@
+/* v7 presentation layer: additive polish on top of the preserved generated runtime. */
+:root{
+  color-scheme:dark;
+  --cx-gold:rgba(239,218,181,.92);
+  --cx-gold-soft:rgba(239,218,181,.58);
+  --cx-line:rgba(255,255,255,.11);
+  --cx-panel:rgba(7,6,15,.42);
+  --cx-ease:cubic-bezier(.22,.78,.18,1);
+}
+
+html{
+  background:#03020a;
+}
+
+body{
+  min-width:320px;
+  background:
+    radial-gradient(circle at 50% 42%,rgba(113,91,164,.08),transparent 34%),
+    radial-gradient(circle at 18% 18%,rgba(239,218,181,.045),transparent 26%),
+    #03020a;
+}
+
+body::before,
+body::after{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:35;
+}
+
+body::before{
+  opacity:.24;
+  background-image:
+    radial-gradient(circle at 20% 30%,rgba(255,255,255,.08) 0 1px,transparent 1.4px),
+    radial-gradient(circle at 72% 64%,rgba(255,255,255,.045) 0 1px,transparent 1.35px);
+  background-size:180px 180px,240px 240px;
+  mix-blend-mode:screen;
+}
+
+body::after{
+  background:
+    radial-gradient(circle 260px at var(--pointer-x,50%) var(--pointer-y,50%),rgba(239,218,181,.075),transparent 68%),
+    linear-gradient(180deg,transparent 58%,rgba(0,0,0,.24));
+  opacity:.9;
+  transition:opacity .8s ease;
+}
+
+#root{
+  min-height:100svh;
+  isolation:isolate;
+}
+
+#experience-chrome{
+  position:fixed;
+  inset:0;
+  z-index:50;
+  pointer-events:none;
+  opacity:0;
+  transition:opacity 900ms var(--cx-ease);
+}
+
+#experience-chrome.is-ready{
+  opacity:1;
+}
+
+#experience-chrome.is-intro{
+  opacity:0;
+}
+
+.cx-brand{
+  position:absolute;
+  top:clamp(18px,3vw,30px);
+  left:clamp(18px,3vw,34px);
+  display:flex;
+  align-items:center;
+  gap:11px;
+  max-width:min(32rem,calc(100vw - 36px));
+  color:rgba(255,255,255,.76);
+  font:500 10px/1.2 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;
+  letter-spacing:.2em;
+  text-transform:uppercase;
+  user-select:none;
+  text-shadow:0 3px 18px rgba(0,0,0,.5);
+}
+
+.cx-brand::before{
+  content:"";
+  width:7px;
+  height:7px;
+  flex:none;
+  border-radius:50%;
+  background:var(--cx-gold);
+  box-shadow:0 0 16px rgba(239,218,181,.55);
+}
+
+.cx-brand span{
+  opacity:.72;
+}
+
+.cx-actions{
+  position:absolute;
+  top:clamp(16px,2.5vw,28px);
+  right:clamp(16px,2.5vw,28px);
+  display:flex;
+  gap:8px;
+  pointer-events:auto;
+}
+
+.cx-button{
+  appearance:none;
+  border:1px solid var(--cx-line);
+  border-radius:999px;
+  min-height:38px;
+  padding:0 12px;
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.028));
+  box-shadow:0 10px 28px rgba(0,0,0,.16),inset 0 0 0 1px rgba(255,255,255,.018);
+  color:rgba(255,255,255,.82);
+  backdrop-filter:blur(14px) saturate(115%);
+  -webkit-backdrop-filter:blur(14px) saturate(115%);
+  font:500 10px/1 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  cursor:pointer;
+  transition:transform .35s var(--cx-ease),border-color .35s ease,background .35s ease,color .35s ease;
+}
+
+.cx-button:hover{
+  transform:translateY(-2px);
+  border-color:rgba(239,218,181,.3);
+  background:linear-gradient(180deg,rgba(255,255,255,.1),rgba(255,255,255,.04));
+  color:#fff;
+}
+
+.cx-button:active{
+  transform:translateY(0);
+}
+
+.cx-button:focus-visible{
+  outline:2px solid rgba(239,218,181,.68);
+  outline-offset:3px;
+}
+
+.cx-button[aria-pressed="true"]{
+  border-color:rgba(239,218,181,.34);
+  color:var(--cx-gold);
+}
+
+.cx-button__icon{
+  font-size:13px;
+  letter-spacing:0;
+  line-height:1;
+}
+
+.cx-progress{
+  position:absolute;
+  left:50%;
+  bottom:clamp(18px,3vw,30px);
+  transform:translateX(-50%);
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:9px 12px;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:999px;
+  background:rgba(5,4,11,.25);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  pointer-events:none;
+}
+
+.cx-progress__dot{
+  width:4px;
+  height:4px;
+  border-radius:50%;
+  background:rgba(255,255,255,.24);
+  box-shadow:0 0 0 transparent;
+  transition:transform .4s var(--cx-ease),background .4s ease,box-shadow .4s ease;
+}
+
+.cx-progress__dot.is-live{
+  transform:scale(1.45);
+  background:var(--cx-gold);
+  box-shadow:0 0 12px rgba(239,218,181,.55);
+}
+
+.cx-progress__label{
+  margin-left:3px;
+  color:rgba(255,255,255,.42);
+  font:500 9px/1 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+}
+
+html[data-minimal="true"] .cx-brand,
+html[data-minimal="true"] .cx-progress{
+  opacity:0;
+  transform:translateY(6px);
+}
+
+html[data-minimal="true"] .cx-actions{
+  opacity:.35;
+}
+
+.intro-hero{
+  isolation:isolate;
+}
+
+.intro-hero::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  z-index:-1;
+  background:
+    radial-gradient(circle at 50% 42%,transparent 0 28%,rgba(0,0,0,.11) 61%,rgba(0,0,0,.38) 100%),
+    linear-gradient(90deg,rgba(255,255,255,.018),transparent 24%,transparent 76%,rgba(255,255,255,.018));
+}
+
+.intro-hero__visual{
+  filter:drop-shadow(0 0 34px rgba(196,174,226,.07));
+}
+
+.intro-hero__ring{
+  box-shadow:0 0 52px rgba(255,255,255,.018) inset,0 0 42px rgba(185,163,219,.04);
+}
+
+.intro-hero__core{
+  box-shadow:0 0 14px rgba(255,255,255,.98),0 0 38px rgba(214,193,239,.45),0 0 80px rgba(239,218,181,.12);
+}
+
+.intro-hero__cta{
+  box-shadow:0 16px 46px rgba(0,0,0,.2),0 0 34px rgba(190,166,222,.04) inset;
+}
+
+@media (max-width:700px){
+  .cx-brand{
+    top:14px;
+    left:14px;
+    font-size:8px;
+    letter-spacing:.14em;
+  }
+  .cx-actions{
+    top:12px;
+    right:12px;
+  }
+  .cx-button{
+    min-height:36px;
+    padding:0 10px;
+  }
+  .cx-button span:not(.cx-button__icon){
+    display:none;
+  }
+  .cx-progress{
+    bottom:14px;
+  }
+}
+
+@media (pointer:coarse){
+  body::after{
+    display:none;
+  }
+}
+
+@media (prefers-reduced-motion:reduce){
+  body::after,
+  #experience-chrome,
+  .cx-button,
+  .cx-progress__dot{
+    transition:none!important;
+  }
+}
