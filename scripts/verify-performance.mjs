@@ -16,7 +16,7 @@ if (!bundle.includes(expectedBudget)) {
   failures.push("Portrait particle budget is not using the verified device-tier caps.");
 }
 
-if (!html.includes("nebula-v5")) {
+if (!html.includes("nebula-v6")) {
   failures.push("index.html is missing the cache-busting version for the performance-tuned bundle.");
 }
 
