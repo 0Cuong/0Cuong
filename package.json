@@ -10,10 +10,11 @@
     "dev": "node server.js",
     "start": "node server.js",
     "build": "node scripts/verify-static.mjs",
-    "check": "npm run build && npm run visual:check && npm run performance:check && npm run server:check",
+    "check": "npm run build && npm run visual:check && npm run performance:check && npm run server:check && npm run intro:check",
     "visual:check": "node scripts/verify-visual-pass.mjs",
     "server:check": "node scripts/verify-server-config.mjs",
-    "performance:check": "node scripts/verify-performance.mjs"
+    "performance:check": "node scripts/verify-performance.mjs",
+    "intro:check": "node scripts/verify-intro.mjs"
   },
   "dependencies": {
     "express": "4.22.3"
