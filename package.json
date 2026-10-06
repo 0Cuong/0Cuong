@@ -17,9 +17,14 @@
     "intro:check": "node scripts/verify-intro.mjs",
     "experience:check": "node scripts/verify-experience.mjs",
     "nebula:check": "node scripts/verify-nebula.mjs",
-    "solar:check": "node scripts/verify-solar.mjs"
+    "solar:check": "node scripts/verify-solar.mjs",
+    "deploy": "wrangler deploy",
+    "preview": "wrangler dev"
   },
   "dependencies": {
     "express": "4.22.3"
+  },
+  "devDependencies": {
+    "wrangler": "4.147.0"
   }
 }
