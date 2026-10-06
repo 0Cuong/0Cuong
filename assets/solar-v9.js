@@ -191,7 +191,14 @@
     points(SB,SS,ST,stars.n,vp,now*.001);sphereDraw({name:"Sun",type:0,c:[1,1,1]},[0,0,0],.43,t);
     for(let i=0;i<planets.length;i++){const p=planets[i],pos=orbit(p,state.simTime);sphereDraw(p,pos,p.r,t);if(i===5)rings(pos,t);}
     points(DB,DS,DT,dust.n,vp,now*.001);
-    if(fctx){fctx.setTransform(state.dpr,0,0,state.dpr,0,0);fctx.clearRect(0,0,state.width,state.height);const s=point([0,0,0],t.view,t.proj),gr=fctx.createRadialGradient(s[0],s[1],0,s[0],s[1],Math.min(state.width,state.height)*.2);gr.addColorStop(0,"rgba(255,255,230,.30)");gr.addColorStop(.14,"rgba(255,196,95,.15)");gr.addColorStop(.48,"rgba(255,130,30,.05)");gr.addColorStop(1,"rgba(255,80,20,0)");fctx.fillStyle=gr;fctx.fillRect(0,0,state.width,state.height);}
+    if(fctx){
+      fctx.setTransform(state.dpr,0,0,state.dpr,0,0);fctx.clearRect(0,0,state.width,state.height);
+      fctx.save();fctx.globalCompositeOperation="screen";
+      for(const p of planets){fctx.beginPath();for(let q=0;q<=180;q++){const a=q/180*TAU,e=p.e,x=p.a*(Math.cos(a)-e),z=p.a*Math.sqrt(1-e*e)*Math.sin(a),s=point([x,0,z],t.view,t.proj);if(q===0)fctx.moveTo(s[0],s[1]);else fctx.lineTo(s[0],s[1]);}fctx.strokeStyle="rgba(170,190,220,.085)";fctx.lineWidth=.7;fctx.stroke();}
+      fctx.restore();
+      const s=point([0,0,0],t.view,t.proj),gr=fctx.createRadialGradient(s[0],s[1],0,s[0],s[1],Math.min(state.width,state.height)*.22);gr.addColorStop(0,"rgba(255,255,230,.30)");gr.addColorStop(.14,"rgba(255,196,95,.15)");gr.addColorStop(.48,"rgba(255,130,30,.05)");gr.addColorStop(1,"rgba(255,80,20,0)");fctx.fillStyle=gr;fctx.fillRect(0,0,state.width,state.height);
+      if(!compact){fctx.font="500 8px ui-monospace,SFMono-Regular,Menlo,monospace";for(const p of planets){const sp=point(orbit(p,state.simTime),t.view,t.proj);if(sp[2]<1) {fctx.fillStyle="rgba(255,255,255,.22)";fctx.fillText(p.name.toUpperCase(),sp[0]+8,sp[1]-7);}}}
+    }
     drawPortrait(now);sync();requestAnimationFrame(draw);
   };
   let syncAt=0;
