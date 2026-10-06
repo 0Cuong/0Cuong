@@ -30,6 +30,9 @@ jobs:
       - name: Verify visual pass
         run: node scripts/verify-visual-pass.mjs
 
+      - name: Verify camera and motion stack
+        run: npm run camera:check
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
