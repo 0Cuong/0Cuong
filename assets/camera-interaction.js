@@ -192,13 +192,14 @@ export function createCameraInteraction() {
       : "Camera access is optional.";
 
     if (state.gsap && !state.reduced) {
-      state.gsap.fromTo(ui.statusDot, { scale: 0.8, opacity: 0.4 }, {
+      const animate = () => state.gsap.fromTo(ui.statusDot, { scale: 0.8, opacity: 0.4 }, {
         scale: 1,
         opacity: 1,
         duration: MOTION.fast,
         ease: "power2.out",
         overwrite: true,
       });
+      state.context ? state.context.add(animate) : animate();
     }
   };
 
@@ -287,12 +288,13 @@ export function createCameraInteraction() {
     }
 
     state.gsap.killTweensOf([ui.panel, ui.frame, ui.statusRow, ui.privacy, ui.action, ui.note]);
-    state.gsap.set(ui.panel, { clipPath: "inset(8% 0 0 0 round 20px)", opacity: 0, scale: 0.985, y: 12 });
-    state.gsap.set([ui.frame, ui.statusRow, ui.privacy, ui.action, ui.note], { opacity: 0, y: 8 });
+    const animate = () => {
+      state.gsap.set(ui.panel, { clipPath: "inset(8% 0 0 0 round 20px)", opacity: 0, scale: 0.985, y: 12 });
+      state.gsap.set([ui.frame, ui.statusRow, ui.privacy, ui.action, ui.note], { opacity: 0, y: 8 });
 
-    const timeline = state.gsap.timeline({ defaults: { overwrite: "auto" } });
-    timeline
-      .to(ui.panel, {
+      const timeline = state.gsap.timeline({ defaults: { overwrite: "auto" } });
+      timeline
+        .to(ui.panel, {
         clipPath: "inset(0% 0 0 0 round 20px)",
         opacity: 1,
         scale: 1,
@@ -307,7 +309,9 @@ export function createCameraInteraction() {
         duration: MOTION.ui,
         stagger: 0.04,
         ease: "power2.out",
-      }, "-=0.18");
+        }, "-=0.18");
+    };
+    state.context ? state.context.add(animate) : animate();
   };
 
   const animateClose = () => {
@@ -318,7 +322,7 @@ export function createCameraInteraction() {
     }
 
     state.gsap.killTweensOf(ui.panel);
-    state.gsap.to(ui.panel, {
+    const animate = () => state.gsap.to(ui.panel, {
       opacity: 0,
       y: 10,
       scale: 0.985,
@@ -331,6 +335,7 @@ export function createCameraInteraction() {
         state.gsap.set(ui.panel, { clearProps: "all" });
       },
     });
+    state.context ? state.context.add(animate) : animate();
   };
 
   const setupScrollMotion = async () => {
@@ -347,12 +352,13 @@ export function createCameraInteraction() {
         once: true,
         onEnter: () => {
           if (!state.reduced) {
-            state.gsap.to(ui.frame, {
+            const animate = () => state.gsap.to(ui.frame, {
               scale: 1,
               duration: 0.5,
               ease: "power3.out",
               overwrite: true,
             });
+            state.context ? state.context.add(animate) : animate();
           }
         },
       });
@@ -414,19 +420,23 @@ export function createCameraInteraction() {
 
     const launcherEnter = () => {
       if (!state.gsap || state.reduced) return;
-      state.gsap.to(ui.launcher, { y: -2, scale: 1.02, duration: MOTION.fast, ease: "power2.out", overwrite: true });
+      const animate = () => state.gsap.to(ui.launcher, { y: -2, scale: 1.02, duration: MOTION.fast, ease: "power2.out", overwrite: true });
+      state.context ? state.context.add(animate) : animate();
     };
     const launcherLeave = () => {
       if (!state.gsap || state.reduced) return;
-      state.gsap.to(ui.launcher, { y: 0, scale: 1, duration: 0.20, ease: "power2.out", overwrite: true });
+      const animate = () => state.gsap.to(ui.launcher, { y: 0, scale: 1, duration: 0.20, ease: "power2.out", overwrite: true });
+      state.context ? state.context.add(animate) : animate();
     };
     const actionEnter = () => {
       if (!state.gsap || state.reduced || ui.action.disabled) return;
-      state.gsap.to(ui.action, { y: -1, duration: 0.16, ease: "power2.out", overwrite: true });
+      const animate = () => state.gsap.to(ui.action, { y: -1, duration: 0.16, ease: "power2.out", overwrite: true });
+      state.context ? state.context.add(animate) : animate();
     };
     const actionLeave = () => {
       if (!state.gsap || state.reduced) return;
-      state.gsap.to(ui.action, { y: 0, duration: 0.18, ease: "power2.out", overwrite: true });
+      const animate = () => state.gsap.to(ui.action, { y: 0, duration: 0.18, ease: "power2.out", overwrite: true });
+      state.context ? state.context.add(animate) : animate();
     };
 
     reducedQuery.addEventListener?.("change", onMotionPreferenceChange);
