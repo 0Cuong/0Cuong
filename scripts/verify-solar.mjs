@@ -38,6 +38,9 @@ for (const token of [
   "pointerdown",
   "wheel",
   "makePortrait",
+  "portraitExitTimer",
+  "solar-v9__portrait-exit",
+  "1250",
   "girlfriend.jpg",
   "ring",
 ]) if (!js.includes(token)) failures.push(`solar-v9.js missing expected behavior: ${token}`);
