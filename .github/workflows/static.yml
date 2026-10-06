@@ -30,6 +30,9 @@ jobs:
       - name: Verify visual pass
         run: node scripts/verify-visual-pass.mjs
 
+      - name: Verify intro hero
+        run: node scripts/verify-intro.mjs
+
       - name: Verify server configuration
         run: node scripts/verify-server-config.mjs
 
