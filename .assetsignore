@@ -1,0 +1,26 @@
+# Never publish dependencies or repository/tooling internals as static assets
+node_modules/
+.git/
+.github/
+scripts/
+coverage/
+dist/
+_site/
+
+# Package/build metadata
+package.json
+package-lock.json
+npm-shrinkwrap.json
+yarn.lock
+pnpm-lock.yaml
+bun.lock
+wrangler.json
+wrangler.jsonc
+wrangler.toml
+
+# Local/runtime-only files
+server.js
+*.log
+.env
+.env.*
+!.env.example
