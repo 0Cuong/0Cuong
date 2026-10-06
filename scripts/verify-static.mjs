@@ -8,6 +8,8 @@ const requiredFiles = [
   'assets/index-cyapdwvW.css',
   'assets/experience-v7.js',
   'assets/experience-v7.css',
+  'assets/nebula-v8.js',
+  'assets/nebula-v8.css',
   'portrait/girlfriend.jpg',
   'music/song.mp3',
   'love-letter.json',
@@ -38,10 +40,12 @@ if (existsSync(indexPath)) {
     './assets/index-cyapdwvW.css',
     './assets/experience-v7.js',
     './assets/experience-v7.css',
+    './assets/nebula-v8.js',
+    './assets/nebula-v8.css',
   ];
 
   for (const ref of expectedRefs) {
-    if (!html.includes(ref)) failures.push(`index.html is missing expected asset reference: ${ref}`);
+    if (!html.includes(ref)) failures.push(`index.html is missing ${ref}`);
   }
 
   if (html.includes('src="/assets/') || html.includes('href="/assets/')) {
