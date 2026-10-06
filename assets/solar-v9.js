@@ -30,7 +30,7 @@
     width:1,height:1,dpr:1,
     yaw:.68,pitch:.48,distance:7.5,targetYaw:.68,targetPitch:.48,targetDistance:7.5,
     dragging:false,pointers:new Map(),pinch:0,
-    paused:reduced,speedIndex:1,simTime:0,last:performance.now(),pulse:0,portraitStarted:0,portrait:null
+    paused:reduced,speedIndex:1,simTime:0,last:performance.now(),pulse:0,portraitStarted:0,portrait:null,portraitExitTimer:null
   };
   const speeds=[0,1,50,500,5000], speedNames=["STOP","1×","50×","500×","5000×"];
   const planets=[
@@ -142,7 +142,21 @@
     fx.classList.toggle("is-active",!intro&&!portrait);particles.classList.toggle("is-active",!intro&&portrait);
     hud.classList.toggle("is-visible",!intro&&!portrait);status.classList.toggle("is-visible",!intro&&!portrait);hint.classList.toggle("is-visible",!intro&&!portrait&&!coarse);
     const stage=portrait?"PORTRAIT":intro?"INTRO":"SYSTEM";
-    if(stage!==state.previousStage){state.previousStage=stage;if(portrait){state.portraitStarted=performance.now();makePortrait().catch(()=>{});}}
+    if(stage!==state.previousStage){
+      state.previousStage=stage;
+      if(state.portraitExitTimer){clearTimeout(state.portraitExitTimer);state.portraitExitTimer=null;}
+      const reveal=document.querySelector(".portrait-reveal");
+      if(!portrait && reveal) reveal.classList.remove("solar-v9__portrait-exit");
+      if(portrait){
+        state.portraitStarted=performance.now();
+        if(reveal) reveal.classList.remove("solar-v9__portrait-exit");
+        makePortrait().catch(()=>{});
+        state.portraitExitTimer=setTimeout(()=>{
+          const current=document.querySelector(".portrait-reveal");
+          if(state.portrait && current) current.classList.add("solar-v9__portrait-exit");
+        },1250);
+      }
+    }
     updateUI();
   };
   const updateUI=()=>{const e=hud.querySelector(".solar-v9__readout");if(e)e.textContent=state.portrait?"PORTRAIT":"SYSTEM · "+(state.paused?"PAUSE":speedNames[state.speedIndex]);};
