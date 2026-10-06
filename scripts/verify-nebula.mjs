@@ -1,5 +1,6 @@
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { resolve } from "node:path";
+import { spawnSync } from "node:child_process";
 
 const root = process.cwd();
 const files = {
@@ -18,6 +19,11 @@ const html = existsSync(files.html) ? readFileSync(files.html, "utf8") : "";
 const css = existsSync(files.css) ? readFileSync(files.css, "utf8") : "";
 const js = existsSync(files.js) ? readFileSync(files.js, "utf8") : "";
 
+const syntax = existsSync(files.js) ? spawnSync(process.execPath, ["--check", files.js], {encoding:"utf8"}) : null;
+if (syntax && syntax.status !== 0) {
+  failures.push(`nebula-v8.js syntax check failed: ${syntax.stderr?.trim() || "unknown parser error"}`);
+}
+
 for (const ref of ["./assets/nebula-v8.css", "./assets/nebula-v8.js"]) {
   if (!html.includes(ref)) failures.push(`index.html is missing ${ref}`);
 }
@@ -33,16 +39,17 @@ for (const token of [
 }
 
 for (const token of [
-  "5200",
   "10500",
-  "NEBULA",
   "FLOCK",
+  "ORBIT",
   "DRONE",
   "HEART",
   "girlfriend.jpg",
   "portraitTargets",
   "targetZoom",
   "wheel",
+  "state.sx",
+  "state.sy",
 ]) {
   if (!js.includes(token)) failures.push(`nebula-v8.js is missing expected behavior: ${token}`);
 }
@@ -57,4 +64,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log("Nebula verification passed: dense particles, flocking formations, zoom/pan input, and portrait sculpture are wired.");
+console.log(`Nebula verification passed: dense particles, cached formations, zoom/pan input, syntax safety, and portrait sculpture are wired. JS ${statSync(files.js).size} bytes.`);
