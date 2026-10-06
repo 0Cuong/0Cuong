@@ -38,8 +38,18 @@ for (const token of [
   "pointerdown",
   "wheel",
   "makePortrait",
+  "portraitExitTimer",
+  "solar-v9__portrait-exit",
+  "1250",
   "girlfriend.jpg",
   "ring",
+  "moonOrbit",
+  'name:"Moon"',
+  "uMode",
+  "compact?2600:6000",
+  "compact?1400:3200",
+  "1.35,24",
+  "syncStage();requestAnimationFrame(draw)",
 ]) if (!js.includes(token)) failures.push(`solar-v9.js missing expected behavior: ${token}`);
 
 for (const token of ["#solar-v9", "#solar-v9-effects", "#solar-v9-particles", "pointer-events:auto", "touch-action:none", "prefers-reduced-motion"]) {

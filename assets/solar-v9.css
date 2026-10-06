@@ -69,3 +69,15 @@
 @media (prefers-reduced-motion:reduce){
   #solar-v9,#solar-v9-effects,#solar-v9-particles,.solar-v9__hud,.solar-v9__status,.solar-v9__hint,.solar-v9__button{transition:none!important;}
 }
+
+/* Portrait transition: keep the reveal cinematic, but deliberately brief. */
+.portrait-reveal.solar-v9__portrait-exit{
+  opacity:0!important;
+  transition:opacity 560ms cubic-bezier(.22,.78,.18,1)!important;
+  pointer-events:none!important;
+}
+@media (prefers-reduced-motion:reduce){
+  .portrait-reveal.solar-v9__portrait-exit{
+    transition:none!important;
+  }
+}

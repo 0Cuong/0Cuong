@@ -52,6 +52,11 @@ if (existsSync(indexPath)) {
     failures.push('index.html still contains root-relative /assets/ URLs that break project Pages paths.');
   }
 
+  const journeyInvariant = 'else if(c===fn.ACT_5_PORTRAIT)T=setTimeout(()=>d(fn.ACT_8_FINAL),3200);';
+  if (!readFileSync(resolve(root, 'assets', 'index-wDCBoduc.js'), 'utf8').includes(journeyInvariant)) {
+    failures.push('Main bundle still uses the long portrait hold instead of the short transition to the final sequence.');
+  }
+
   if (!/<html[^>]+lang="[^"]+"/i.test(html)) {
     failures.push('index.html is missing an explicit language attribute.');
   }
