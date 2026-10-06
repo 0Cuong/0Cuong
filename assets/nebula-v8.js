@@ -47,6 +47,8 @@
     tx: new Float32Array(1),
     ty: new Float32Array(1),
     tz: new Float32Array(1),
+    sx: new Float32Array(1),
+    sy: new Float32Array(1),
     zoom: 1,
     panX: 0,
     panY: 0,
@@ -83,7 +85,7 @@
 
   const alloc = () => {
     const n = state.count;
-    for (const key of ["x","y","vx","vy","z","size","phase","seed","tx","ty","tz"]) {
+    for (const key of ["x","y","vx","vy","z","size","phase","seed","tx","ty","tz","sx","sy"]) {
       state[key] = new Float32Array(n);
     }
     for (let i = 0; i < n; i++) {
@@ -186,6 +188,8 @@
 
   const setFormation = (next, instant = false) => {
     state.morphFrom = state.formation;
+    state.sx.set(state.tx);
+    state.sy.set(state.ty);
     state.formation = (next + formations.length) % formations.length;
     state.morphStarted = performance.now();
     state.cycleAt = performance.now() + formations[state.formation].duration;
