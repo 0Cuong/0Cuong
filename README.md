@@ -21,6 +21,37 @@
 
 ---
 
+### ✦ Universe Experience Architecture
+
+This repository contains the prebuilt static client for the interactive **universe for my gf** experience. The production site is deployed directly to GitHub Pages; the Express server exists only as a local development server and is not part of the Pages deployment.
+
+```text
+Browser
+  └─ GitHub Pages
+      ├─ index.html
+      ├─ assets/        hashed JS/CSS + visual assets
+      ├─ portrait/      personal portrait media
+      ├─ music/         local audio
+      └─ *.json         runtime content/metadata
+
+Local development
+  └─ Node.js + Express
+      └─ http://127.0.0.1:3000
+```
+
+The repository intentionally tracks the generated frontend artifact because the original source tree is not present. The build/check command therefore validates the static artifact rather than pretending to regenerate the application.
+
+#### Local development
+
+Requires Node.js 20 or newer:
+
+    npm install
+    npm run build
+    npm run dev
+
+GitHub Pages uses one deterministic workflow: `.github/workflows/static.yml`. It stages only the files required by the website before deployment.
+
+---
 ### ✦ About
 
 I build web applications, developer tools, and software experiments across the TypeScript and Node.js ecosystems. My work focuses on **recovery-first application design**, **serverless edge architectures** (Cloudflare Workers, D1, R2), and **real-time audio streaming tooling** in Discord.
