@@ -3,6 +3,6 @@
   "description": "An interactive 3D universe love letter and starry celestial romantic experience.",
   "permissions": [],
   "capabilities": [
-    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+    "INTERACTIVE_CELESTIAL_WEB_EXPERIENCE"
   ]
 }
