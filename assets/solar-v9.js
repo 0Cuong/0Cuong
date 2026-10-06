@@ -30,9 +30,9 @@
     width:1,height:1,dpr:1,
     yaw:.68,pitch:.48,distance:7.5,targetYaw:.68,targetPitch:.48,targetDistance:7.5,
     dragging:false,pointers:new Map(),pinch:0,
-    paused:reduced,speedIndex:1,simTime:0,last:performance.now(),pulse:0,portraitStarted:0,portrait:null,portraitExitTimer:null
+    paused:reduced,speedIndex:1,simTime:0,last:performance.now(),pulse:0,portraitStarted:0,portrait:null,portraitExitTimer:null,solarStarted:0,solarComplete:false
   };
-  const speeds=[0,1,50,500,5000], speedNames=["STOP","1×","50×","500×","5000×"];
+  const speeds=[0,1,50,500,5000], speedNames=["STOP","1×","50×","500×","5000×"];\n  const SOLAR_DURATION_MS=reduced?1800:8500;
   const planets=[
     {name:"Mercury",a:.55,e:.10,r:.034,period:87.97,type:0,c:[.54,.50,.46]},
     {name:"Venus",a:.78,e:.03,r:.062,period:224.70,type:1,c:[.80,.64,.35]},
@@ -137,19 +137,38 @@
   };
 
   const sync=()=>{
+    const now=performance.now();
     const intro=!!document.querySelector(".intro-hero"),portrait=!!document.querySelector(".portrait-reveal");
     state.intro=intro;state.portrait=portrait;
-    solar.classList.toggle("is-active",!intro);solar.classList.toggle("is-interactive",!intro&&!portrait);
-    fx.classList.toggle("is-active",!intro&&!portrait);particles.classList.toggle("is-active",!intro&&portrait);
-    hud.classList.toggle("is-visible",!intro&&!portrait);status.classList.toggle("is-visible",!intro&&!portrait);hint.classList.toggle("is-visible",!intro&&!portrait&&!coarse);
-    const stage=portrait?"PORTRAIT":intro?"INTRO":"SYSTEM";
+
+    // Solar is an intro/interlude only. Once its observatory moment is complete,
+    // the original React experience must become the foreground again.
+    if(intro){
+      state.solarStarted=0;
+      state.solarComplete=false;
+    }else if(!state.solarStarted){
+      state.solarStarted=now;
+    }else if(!state.solarComplete&&!portrait&&now-state.solarStarted>=SOLAR_DURATION_MS){
+      state.solarComplete=true;
+    }
+
+    const solarVisible=!intro&&!state.solarComplete&&!portrait;
+    solar.classList.toggle("is-active",solarVisible);
+    solar.classList.toggle("is-interactive",solarVisible);
+    fx.classList.toggle("is-active",solarVisible);
+    particles.classList.toggle("is-active",!intro&&portrait);
+    hud.classList.toggle("is-visible",solarVisible);
+    status.classList.toggle("is-visible",solarVisible);
+    hint.classList.toggle("is-visible",solarVisible&&!coarse);
+
+    const stage=portrait?"PORTRAIT":intro?"INTRO":state.solarComplete?"EXPERIENCE":"SYSTEM";
     if(stage!==state.previousStage){
       state.previousStage=stage;
       if(state.portraitExitTimer){clearTimeout(state.portraitExitTimer);state.portraitExitTimer=null;}
       const reveal=document.querySelector(".portrait-reveal");
       if(!portrait && reveal) reveal.classList.remove("solar-v9__portrait-exit");
       if(portrait){
-        state.portraitStarted=performance.now();
+        state.portraitStarted=now;
         if(reveal) reveal.classList.remove("solar-v9__portrait-exit");
         makePortrait().catch(()=>{});
         state.portraitExitTimer=setTimeout(()=>{
@@ -177,7 +196,7 @@
     else{const a=[...state.pointers.values()],d=Math.hypot(a[0][0]-a[1][0],a[0][1]-a[1][1]);if(state.pinch>0)state.targetDistance=clamp(state.targetDistance*(state.pinch/d),1.35,24);state.pinch=d;}});
   const release=e=>{state.pointers.delete(e.pointerId);if(state.pointers.size<2)state.pinch=0;state.dragging=state.pointers.size===1;solar.classList.toggle("is-dragging",state.dragging);};
   solar.addEventListener("pointerup",release);solar.addEventListener("pointercancel",release);
-  solar.addEventListener("wheel",e=>{if(state.intro||state.portrait)return;e.preventDefault();state.targetDistance=clamp(state.targetDistance*Math.exp(e.deltaY*.0011),1.35,24);},{passive:false});
+  solar.addEventListener("wheel",e=>{if(state.intro||state.portrait||state.solarComplete)return;e.preventDefault();state.targetDistance=clamp(state.targetDistance*Math.exp(e.deltaY*.0011),1.35,24);},{passive:false});
 
   const makePortrait=async()=>{
     const img=new Image();img.decoding="async";img.src="./portrait/girlfriend.jpg";try{await img.decode();}catch{await new Promise((r,j)=>{img.onload=r;img.onerror=j;});}
@@ -202,7 +221,7 @@
     const dt=Math.min(.04,Math.max(.001,(now-state.last)/1000));state.last=now;
     if(!state.intro&&!state.portrait&&!state.paused)state.simTime+=dt*speeds[state.speedIndex]*.07;
     state.yaw=lerp(state.yaw,state.targetYaw,1-Math.exp(-6*dt));state.pitch=lerp(state.pitch,state.targetPitch,1-Math.exp(-6*dt));state.distance=lerp(state.distance,state.targetDistance,1-Math.exp(-6*dt));
-    if(state.intro){requestAnimationFrame(draw);return;}
+    if(state.intro||state.solarComplete||state.portrait){drawPortrait(now);syncStage();requestAnimationFrame(draw);return;}
     gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);const t=camera(),vp=M.mul(t.proj,t.view);
     points(SB,SS,ST,stars.n,vp,now*.001,0);sphereDraw({name:"Sun",type:0,c:[1,1,1]},[0,0,0],.43,t);
     for(let i=0;i<planets.length;i++){const p=planets[i],pos=orbit(p,state.simTime);sphereDraw(p,pos,p.r,t);if(i===5)rings(pos,t);}
