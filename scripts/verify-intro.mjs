@@ -57,8 +57,8 @@ for (const [name, check] of cssInvariants) {
   if (!ok) failures.push(`Intro CSS invariant failed: ${name}`);
 }
 
-if (!html.includes("nebula-v6")) {
-  failures.push("index.html is missing the intro cache-busting version nebula-v6.");
+if (!html.includes("nebula-v7")) {
+  failures.push("index.html is missing the intro cache-busting version nebula-v7.");
 }
 
 const bundleBytes = statSync(bundlePath).size;
