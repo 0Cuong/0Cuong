@@ -5250,45 +5250,43 @@ uniform float uTime;
 uniform float uDelta;
 in vec2 vUv;
 out vec4 fragColor;
-
 ${CY}
-
 void main() {
   vec3 pos = texture(tPositions, vUv).xyz;
   vec3 vel = texture(tVelocities, vUv).xyz;
   vec4 staticB = texture(tStaticDataB, vUv);
-
   float layer = staticB.r;
   float speedScale = staticB.b;
 
-  // 1. Fluid Curl Noise Drift
-  float noiseScale = mix(0.015, 0.005, layer / 4.0);
-  vec3 curl = curlNoise(pos * noiseScale + uTime * 0.08);
+  // 1. Organic Curl Noise (calibrated by layer)
+  float noiseScale = mix(0.012, 0.004, layer / 4.0);
+  vec3 curl = curlNoise(pos * noiseScale + vec3(uTime * 0.035, uTime * 0.025, uTime * 0.018));
 
-  // 2. Cosmic Forward wind
-  vec3 wind = vec3(0.0, 0.0, (2.0 + (4.0 - layer) * 0.6) * speedScale);
+  // 2. Curvilinear Ribbon Flow Stream (Option B: Galactic Ribbon)
+  float zRad = pos.z * 0.0035;
+  vec3 flowDir = normalize(vec3(-cos(zRad + 0.5) * 0.65, sin(pos.z * 0.0042) * 0.35, 1.35));
+  vec3 flowForce = flowDir * (1.6 + (layer == 2.0 ? 1.2 : 0.3)) * speedScale;
 
-  // 3. Gravity pulling toward structure center
-  vec3 gravity = -pos * 0.00012 * (5.0 - layer);
+  // 3. Ribbon Guiding Force (soft gravitational cohesion along filament)
+  float targetX = sin(pos.z * 0.0035 + 0.5) * 190.0 + cos(pos.z * 0.0018) * 60.0;
+  float targetY = cos(pos.z * 0.0042) * 95.0 + sin(pos.z * 0.002) * 40.0;
+  vec2 toRibbon = vec2(targetX, targetY) - pos.xy;
+  float pullCoeff = (layer == 2.0 ? 0.024 : (layer == 1.0 ? 0.010 : 0.002)) * speedScale;
+  vec3 guideForce = vec3(toRibbon * pullCoeff, 0.0);
 
-  vec3 force = curl * 1.3 + wind + gravity;
-
-  // Delta integrated force step
+  // 4. Combined Force & Frame-rate Independent Damping
+  vec3 force = curl * (1.1 * speedScale) + flowForce + guideForce;
   vel += force * uDelta;
+  vel *= pow(0.94, uDelta * 60.0);
 
-  // Frame-rate independent damping formula
-  vel *= pow(0.93, uDelta * 60.0);
-
-  // Safe clamping limits to prevent extreme visual acceleration
-  float maxSpeed = mix(12.0, 3.5, layer / 4.0);
+  // 5. Calm Speed Clamping (prevents hyper-speed streaks)
+  float maxSpeed = mix(4.6, 1.8, (layer == 3.0 ? 1.0 : (layer == 0.0 ? 0.8 : 0.0)));
   float speed = length(vel);
   if (speed > maxSpeed) {
     vel = (vel / speed) * maxSpeed;
   }
-
   fragColor = vec4(vel, 1.0);
-}
-`,PY=`
+}`,PY=`
 uniform sampler2D tPositions;
 uniform sampler2D tVelocities;
 uniform sampler2D tSeedPositions;
@@ -5297,38 +5295,27 @@ uniform float uDelta;
 uniform float uTime;
 in vec2 vUv;
 out vec4 fragColor;
-
 void main() {
   vec4 posData = texture(tPositions, vUv);
   vec3 pos = posData.xyz;
   float age = posData.w;
-
   vec3 vel = texture(tVelocities, vUv).xyz;
   vec4 staticB = texture(tStaticDataB, vUv);
   float decayRate = staticB.a;
 
-  // 1. Dynamic path integration
   pos += vel * uDelta;
-
-  // 2. Linear lifetime accumulation
   age += uDelta * decayRate;
 
-  // 3. Continuous respawn boundary check (infinite visual tunnel loop)
   if (age >= 1.0 || pos.z > 140.0) {
     vec4 seed = texture(tSeedPositions, vUv);
     pos = seed.xyz;
-    
-    // Tiny pseudorandom coordinates jitter to ensure spatial spread on rebirth
     float jitterX = fract(sin(vUv.x * 12.989 + uTime) * 43758.54);
     float jitterY = fract(cos(vUv.y * 78.233 + uTime) * 43758.54);
-    pos.xy += vec2(jitterX - 0.5, jitterY - 0.5) * 15.0;
-    
-    age = fract(sin(vUv.x * 3.42) * 23.1) * 0.15; // Jitter seed age to avoid synchronization
+    pos.xy += vec2(jitterX - 0.5, jitterY - 0.5) * 8.0;
+    age = fract(sin(vUv.x * 3.42) * 23.1) * 0.12;
   }
-
   fragColor = vec4(pos, age);
-}
-`,IY=`
+}`,IY=`
 uniform sampler2D tPositions;
 uniform sampler2D tStaticDataA;
 uniform sampler2D tStaticDataB;
@@ -5345,11 +5332,9 @@ void main() {
   vec4 posData = texture(tPositions, uv);
   vec3 pos = posData.xyz;
   float age = posData.w;
-
   vec4 staticA = texture(tStaticDataA, uv);
   vec3 baseColor = staticA.rgb;
   float size = staticA.a;
-
   vec4 staticB = texture(tStaticDataB, uv);
   float layer = staticB.r;
   float phase = staticB.g;
@@ -5357,24 +5342,20 @@ void main() {
   vLayer = layer;
   vAge = age;
 
-  // Bioluminescent pulsing curve
-  float freq = mix(2.2, 0.45, layer / 4.0);
+  float freq = mix(0.35, 1.6, (layer == 4.0 ? 1.0 : (layer == 3.0 ? 0.6 : 0.2)));
   vEnergy = sin(uTime * freq + phase) * 0.5 + 0.5;
 
   vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
   vDepth = -mvPosition.z;
 
-  // Distance attenuation
-  float pointScale = size * (750.0 / max(vDepth, 1.0));
-  gl_PointSize = clamp(pointScale, 0.6, 64.0);
+  float pointScale = size * (720.0 / max(vDepth, 1.0));
+  gl_PointSize = clamp(pointScale, 0.75, 32.0);
 
-  // HDR emission multiplier 
-  float hdrMultiplier = mix(4.0, 1.1, layer / 4.0);
+  float hdrMultiplier = (layer == 3.0 ? 1.6 : (layer == 4.0 ? 1.3 : (layer == 2.0 ? 0.8 : 0.2)));
   vColor = baseColor * (1.0 + vEnergy * hdrMultiplier);
 
   gl_Position = projectionMatrix * mvPosition;
-}
-`,LY=`
+}`,LY=`
 uniform float uGlobalOpacity;
 in vec3 vColor;
 in float vEnergy;
@@ -5384,80 +5365,68 @@ in float vAge;
 out vec4 fragColor;
 
 void main() {
-  // Shape point coords to soft circular profiles
   vec2 coords = 2.0 * gl_PointCoord - 1.0;
   float distSq = dot(coords, coords);
   if (distSq > 1.0) discard;
 
-  // Core volume radial decay
-  float glow = exp(-distSq * 3.8);
+  float core = exp(-distSq * 7.5);
+  float halo = exp(-distSq * 2.4) * 0.55;
+  float glow = core + halo;
 
-  // Subtle light halo expansion
-  float halo = smoothstep(0.65, 1.0, distSq) * vEnergy * 0.45;
+  float nearFade = smoothstep(12.0, 42.0, vDepth);
+  float farFade = smoothstep(1150.0, 520.0, vDepth);
 
-  // Depth clip protection (near-field lens fading)
-  float nearFade = smoothstep(6.0, 35.0, vDepth);
+  float ageFade = smoothstep(1.0, 0.85, vAge) * smoothstep(0.0, 0.10, vAge);
 
-  // Outward volumetric fog
-  float farFade = smoothstep(1150.0, 450.0, vDepth);
-
-  // Fade-out decay curves based on simulation lifespan
-  float ageFade = smoothstep(1.0, 0.82, vAge) * smoothstep(0.0, 0.12, vAge);
-
-  float layerOpacity = 1.0;
+  float layerOpacity = 0.16;
   if (vLayer > 0.5 && vLayer < 1.5) {
-    layerOpacity = 0.50; // Ocean mist softness
-  } else if (vLayer > 3.5) {
-    layerOpacity = 0.85; // Sharp core stars
+    layerOpacity = 0.26;
+  } else if (vLayer >= 1.5 && vLayer < 2.5) {
+    layerOpacity = 0.42;
+  } else if (vLayer >= 2.5 && vLayer < 3.5) {
+    layerOpacity = 0.82;
+  } else if (vLayer >= 3.5) {
+    layerOpacity = 0.92;
   }
 
-  float alpha = (glow + halo) * nearFade * farFade * ageFade * layerOpacity * uGlobalOpacity;
-
-  // Prevent bright blowout artifacts under heavy additive overlap
-  vec3 finalColor = clamp(vColor, 0.0, 8.0);
-
+  float alpha = glow * nearFade * farFade * ageFade * layerOpacity * uGlobalOpacity;
+  vec3 finalColor = clamp(vColor, 0.0, 3.2);
   fragColor = vec4(finalColor, alpha);
-}
-`,NY=`
+}`,NY=`
 uniform float uTime;
 in vec3 color;
 out vec3 vColor;
 out float vDepth;
-
 void main() {
   vec3 pos = position;
-  
-  // Simple periodic movement on the CPU buffer positions
-  pos.x += sin(uTime * 0.4 + position.z * 0.015) * 8.0;
-  pos.y += cos(uTime * 0.3 + position.x * 0.012) * 8.0;
-  
-  // Continuous wrapping along depth axis
-  pos.z = mod(pos.z + uTime * 15.0 + 1000.0, 1000.0) - 500.0;
+  float zRad = pos.z * 0.0035;
+  pos.x += sin(uTime * 0.25 + zRad) * 5.0;
+  pos.y += cos(uTime * 0.20 + pos.x * 0.01) * 3.5;
+  pos.z = mod(pos.z + uTime * 10.0 + 1000.0, 1000.0) - 500.0;
 
   vec4 mvPos = modelViewMatrix * vec4(pos, 1.0);
   vDepth = -mvPos.z;
-
-  gl_PointSize = 3.5 * (750.0 / max(vDepth, 1.0));
+  gl_PointSize = clamp(2.6 * (700.0 / max(vDepth, 1.0)), 0.75, 18.0);
   vColor = color;
   gl_Position = projectionMatrix * mvPos;
-}
-`,UY=`
+}`,UY=`
 in vec3 vColor;
 in float vDepth;
 out vec4 fragColor;
-
 void main() {
   vec2 coords = 2.0 * gl_PointCoord - 1.0;
-  float r = dot(coords, coords);
-  if (r > 1.0) discard;
-  
-  float glow = exp(-r * 3.2);
-  float nearFade = smoothstep(5.0, 30.0, vDepth);
-  float farFade = smoothstep(1000.0, 400.0, vDepth);
-  
-  fragColor = vec4(vColor, glow * nearFade * farFade * 0.7);
-}
-`,OY=()=>{const{gl:i}=Cm(),e=1,[t,n]=se.useState(null),s=se.useRef(0),a=se.useRef(0),l=se.useRef(0),c=se.useRef(0),d=se.useRef(null);se.useEffect(()=>{const b=i.getContext(),A=b instanceof WebGL2RenderingContext,T=!!i.extensions.get("EXT_color_buffer_float"),E=!!i.extensions.get("EXT_color_buffer_half_float")||A&&!!b.getExtension("EXT_color_buffer_half_float");A&&(T||E)?n(!0):(console.warn("OceanOfStars: WebGL2 Float render targets missing. Triggering performance fallback."),n(!1))},[i]);const p=se.useMemo(()=>wY(i),[i]),m=se.useMemo(()=>{if(t!==!0)return null;const{size:b,useHalfFloat:A}=p,T=b*b,E=new Float32Array(T*4),R=new Float32Array(T*4),P=new Float32Array(T*4),D=new Float32Array(T*4),N=new ct;for(let Pe=0;Pe<T;Pe++){const ze=Pe*4,de=Math.random();let Ue=0,Oe=0,je=0,bt=1,Mt=.11+Math.random()*.14;de<.4?(Ue=0,Oe=Math.random()*5+3.5,je=-200,bt=1.25,N.setHSL(.5+Math.random()*.08,.95,.55)):de<.7?(Ue=1,Oe=Math.random()*9+4.5,je=-400,bt=.55,N.setHSL(.58,.65,.5)):de<.85?(Ue=2,Oe=Math.random()*2.2+.8,je=-600,bt=.95,N.setHSL(.76+Math.random()*.12,.85,.42)):de<.95?(Ue=3,Oe=Math.random()*22+8,je=-800,bt=.35,N.setHSL(.08+Math.random()*.04,.92,.52)):(Ue=4,Ue=4,Oe=Math.random()*1.4+.4,je=-1e3,bt=.15,N.setHSL(0,0,.85+Math.random()*.15)),E[ze+0]=(Math.random()-.5)*850,E[ze+1]=(Math.random()-.5)*450,E[ze+2]=je+Math.random()*400,E[ze+3]=Math.random(),R[ze+0]=(Math.random()-.5)*1.5,R[ze+1]=(Math.random()-.5)*1.5,R[ze+2]=(Math.random()-.5)*1.5,R[ze+3]=1,P[ze+0]=N.r,P[ze+1]=N.g,P[ze+2]=N.b,P[ze+3]=Oe,D[ze+0]=Ue,D[ze+1]=Math.random()*Math.PI*2,D[ze+2]=bt,D[ze+3]=Mt}const U=Pe=>{const ze=new ja(Pe,b,b,Vs,ws);return ze.minFilter=Jn,ze.magFilter=Jn,ze.generateMipmaps=!1,ze.needsUpdate=!0,ze},B=U(E),I=U(R),O=U(P),V=U(D),K={minFilter:Jn,magFilter:Jn,format:Vs,type:A?Oo:ws,depthBuffer:!1,stencilBuffer:!1},J=[new ai(b,b,K),new ai(b,b,K)],oe=[new ai(b,b,K),new ai(b,b,K)],Q=new fm,q=new zf(-1,1,1,-1,-1,1),Y=new ri({glslVersion:lf,uniforms:{uSource:{value:null}},vertexShader:lT,fragmentShader:RY,depthWrite:!1,depthTest:!1}),$=new ri({glslVersion:lf,uniforms:{tPositions:{value:null},tVelocities:{value:null},tStaticDataB:{value:V},uTime:{value:0},uDelta:{value:0}},vertexShader:lT,fragmentShader:DY,depthWrite:!1,depthTest:!1}),ce=new ri({glslVersion:lf,uniforms:{tPositions:{value:null},tVelocities:{value:null},tSeedPositions:{value:B},tStaticDataB:{value:V},uTime:{value:0},uDelta:{value:0}},vertexShader:lT,fragmentShader:PY,depthWrite:!1,depthTest:!1}),be=new Xi(new dd(2,2),Y);Q.add(be);const X=new qt,te=new Float32Array(T*2),Re=new Float32Array(T*3);for(let Pe=0;Pe<T;Pe++){const ze=Pe%b,de=Math.floor(Pe/b);te[Pe*2+0]=(ze+.5)/b,te[Pe*2+1]=(de+.5)/b}return X.setAttribute("uv",new mn(te,2)),X.setAttribute("position",new mn(Re,3)),{size:b,fboCamera:q,fboScene:Q,fboQuad:be,velMat:$,posMat:ce,copyMat:Y,posFBOs:J,velFBOs:oe,tSeedPos:B,tSeedVel:I,tStaticDataA:O,tStaticDataB:V,renderGeo:X}},[p,t]);se.useLayoutEffect(()=>{m&&(m.fboQuad.material=m.copyMat,m.copyMat.uniforms.uSource.value=m.tSeedPos,i.setRenderTarget(m.posFBOs[0]),i.render(m.fboScene,m.fboCamera),i.setRenderTarget(m.posFBOs[1]),i.render(m.fboScene,m.fboCamera),m.copyMat.uniforms.uSource.value=m.tSeedVel,i.setRenderTarget(m.velFBOs[0]),i.render(m.fboScene,m.fboCamera),i.setRenderTarget(m.velFBOs[1]),i.render(m.fboScene,m.fboCamera),i.setRenderTarget(null))},[i,m]);const v=se.useMemo(()=>m?new ri({glslVersion:lf,transparent:!0,depthWrite:!1,blending:nc,uniforms:{tPositions:{value:null},tStaticDataA:{value:m.tStaticDataA},tStaticDataB:{value:m.tStaticDataB},uTime:{value:0},uGlobalOpacity:{value:0}},vertexShader:IY,fragmentShader:LY}):null,[m]),[_,x]=se.useMemo(()=>{if(t!==!1)return[null,null];const b=new qt,A=12e3,T=new Float32Array(A*3),E=new Float32Array(A*3),R=new ct;for(let D=0;D<A;D++)T[D*3+0]=(Math.random()-.5)*850,T[D*3+1]=(Math.random()-.5)*450,T[D*3+2]=(Math.random()-1)*850,Math.random()<.6?R.setHSL(.5+Math.random()*.1,.9,.6):R.setHSL(.6,.6,.5),E[D*3+0]=R.r,E[D*3+1]=R.g,E[D*3+2]=R.b;b.setAttribute("position",new mn(T,3)),b.setAttribute("color",new mn(E,3));const P=new ri({glslVersion:lf,transparent:!0,depthWrite:!1,blending:nc,uniforms:{uTime:{value:0}},vertexShader:NY,fragmentShader:UY});return[b,P]},[t]);return Bo((b,A)=>{if(s.current=Dn.lerp(s.current,e,A*2.2),d.current&&(d.current.visible=s.current>.001),s.current<.001,t===!1){x&&(x.uniforms.uTime.value=b.clock.elapsedTime);return}if(!m||!v)return;if(l.current+=A,a.current++,a.current%p.updateFrequency!==0){v.uniforms.uTime.value=b.clock.elapsedTime,v.uniforms.uGlobalOpacity.value=s.current;return}const T=Math.min(l.current,.1);l.current=0;const E=c.current,R=1-E;m.fboQuad.material=m.velMat,m.velMat.uniforms.tPositions.value=m.posFBOs[E].texture,m.velMat.uniforms.tVelocities.value=m.velFBOs[E].texture,m.velMat.uniforms.uTime.value=b.clock.elapsedTime,m.velMat.uniforms.uDelta.value=T,i.setRenderTarget(m.velFBOs[R]),i.render(m.fboScene,m.fboCamera),m.fboQuad.material=m.posMat,m.posMat.uniforms.tPositions.value=m.posFBOs[E].texture,m.posMat.uniforms.tVelocities.value=m.velFBOs[R].texture,m.posMat.uniforms.uTime.value=b.clock.elapsedTime,m.posMat.uniforms.uDelta.value=T,i.setRenderTarget(m.posFBOs[R]),i.render(m.fboScene,m.fboCamera),i.setRenderTarget(null),c.current=R,v.uniforms.tPositions.value=m.posFBOs[R].texture,v.uniforms.uTime.value=b.clock.elapsedTime,v.uniforms.uGlobalOpacity.value=s.current}),se.useEffect(()=>()=>{m&&(m.posFBOs.forEach(b=>b.dispose()),m.velFBOs.forEach(b=>b.dispose()),m.tSeedPos.dispose(),m.tSeedVel.dispose(),m.tStaticDataA.dispose(),m.tStaticDataB.dispose(),m.fboQuad.geometry.dispose(),m.renderGeo.dispose(),m.copyMat.dispose(),m.velMat.dispose(),m.posMat.dispose()),v&&v.dispose(),_&&_.dispose(),x&&x.dispose()},[m,v,_,x]),t===null?null:t===!1?Ce.jsx("points",{ref:d,geometry:_,frustumCulled:!1,children:Ce.jsx("primitive",{object:x,attach:"material"})}):Ce.jsx("points",{ref:d,geometry:m.renderGeo,frustumCulled:!1,children:Ce.jsx("primitive",{object:v,attach:"material"})})},ui=6,zY=()=>{let i=4,e=4,t=!1;return typeof navigator<"u"&&(i=navigator.hardwareConcurrency||4,e=navigator.deviceMemory||4,t=/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)),{cores:i,mem:e,isMobile:t}};function BY(){const{cores:i,mem:e,isMobile:t}=zY();return t?8e5:e<=4||i<=4||e<=8||i<=8?5e6:15e6}const FY=`
+  float distSq = dot(coords, coords);
+  if (distSq > 1.0) discard;
+
+  float core = exp(-distSq * 6.5);
+  float halo = exp(-distSq * 2.2) * 0.45;
+  float glow = core + halo;
+
+  float nearFade = smoothstep(10.0, 35.0, vDepth);
+  float farFade = smoothstep(1050.0, 480.0, vDepth);
+
+  fragColor = vec4(vColor, glow * nearFade * farFade * 0.45);
+}`,OY=()=>{const{gl:i}=Cm(),e=1,[t,n]=se.useState(null),s=se.useRef(0),a=se.useRef(0),l=se.useRef(0),c=se.useRef(0),d=se.useRef(null);se.useEffect(()=>{const b=i.getContext(),A=b instanceof WebGL2RenderingContext,T=!!i.extensions.get("EXT_color_buffer_float"),E=!!i.extensions.get("EXT_color_buffer_half_float")||A&&!!b.getExtension("EXT_color_buffer_half_float");A&&(T||E)?n(!0):(console.warn("OceanOfStars: WebGL2 Float render targets missing. Triggering performance fallback."),n(!1))},[i]);const p=se.useMemo(()=>wY(i),[i]),m=se.useMemo(()=>{if(t!==!0)return null;const{size:b,useHalfFloat:A}=p,T=b*b,E=new Float32Array(T*4),R=new Float32Array(T*4),P=new Float32Array(T*4),D=new Float32Array(T*4),N=new ct;for(let Pe=0;Pe<T;Pe++){const ze=Pe*4,de=Math.random();let Ue=0,Oe=0,bt=1,Mt=0.1,posX=0,posY=0,posZ=0;if(de<0.52){Ue=0;Oe=0.85+Math.random()*0.55;bt=0.12;Mt=0.04+Math.random()*0.05;posZ=-920+Math.random()*650;let rad=80+Math.sqrt(Math.random())*330,ang=Math.random()*Math.PI*2;posX=Math.cos(ang)*rad+(Math.random()-0.5)*60;posY=Math.sin(ang)*rad*0.58+(Math.random()-0.5)*45;Math.random()<0.6?N.setRGB(0.08,0.16,0.35):N.setRGB(0.12,0.22,0.44);}else if(de<0.76){Ue=1;Oe=1.8+Math.random()*1.3;bt=0.38;Mt=0.08+Math.random()*0.07;posZ=-750+Math.random()*550;let curveX=Math.sin(posZ*0.0035+0.5)*190+Math.cos(posZ*0.0018)*60,curveY=Math.cos(posZ*0.0042)*95+Math.sin(posZ*0.002)*40,distDust=Math.pow(Math.random(),0.75)*140,angDust=Math.random()*Math.PI*2;posX=curveX+Math.cos(angDust)*distDust;posY=curveY+Math.sin(angDust)*distDust*0.65;let r=Math.random();r<0.35?N.setRGB(0.18,0.24,0.54):(r<0.7?N.setRGB(0.28,0.18,0.58):N.setRGB(0.15,0.32,0.65));}else if(de<0.93){Ue=2;Oe=2.4+Math.random()*1.6;bt=0.72;Mt=0.11+Math.random()*0.09;posZ=-700+Math.random()*580;let curveX=Math.sin(posZ*0.0035+0.5)*190+Math.cos(posZ*0.0018)*60,curveY=Math.cos(posZ*0.0042)*95+Math.sin(posZ*0.002)*40,distCore=Math.pow(Math.random(),1.6)*65,angCore=Math.random()*Math.PI*2;posX=curveX+Math.cos(angCore)*distCore;posY=curveY+Math.sin(angCore)*distCore*0.6;let r=Math.random();r<0.45?N.setRGB(0.22,0.55,0.96):(r<0.8?N.setRGB(0.52,0.28,0.90):N.setRGB(0.16,0.74,0.92));}else if(de<0.98){Ue=3;Oe=5.2+Math.random()*2.8;bt=0.10;Mt=0.03+Math.random()*0.03;posZ=-820+Math.random()*680;let curveX=Math.sin(posZ*0.0035+0.5)*190+Math.cos(posZ*0.0018)*60,curveY=Math.cos(posZ*0.0042)*95+Math.sin(posZ*0.002)*40,distHero=40+Math.random()*110,angHero=Math.random()*Math.PI*2;posX=curveX+Math.cos(angHero)*distHero;posY=curveY+Math.sin(angHero)*distHero*0.7;Math.random()<0.7?N.setRGB(0.94,0.97,1.0):N.setRGB(0.98,0.92,0.85);}else{Ue=4;Oe=3.2+Math.random()*2.0;bt=0.45;Mt=0.16+Math.random()*0.12;posZ=-600+Math.random()*450;let curveX=Math.sin(posZ*0.0035+0.5)*190+Math.cos(posZ*0.0018)*60,curveY=Math.cos(posZ*0.0042)*95+Math.sin(posZ*0.002)*40,distAcc=Math.random()*80,angAcc=Math.random()*Math.PI*2;posX=curveX+Math.cos(angAcc)*distAcc;posY=curveY+Math.sin(angAcc)*distAcc*0.6;let r=Math.random();r<0.4?N.setRGB(0.45,0.90,1.0):(r<0.75?N.setRGB(0.85,0.50,1.0):N.setRGB(1.0,0.88,0.55));}E[ze+0]=posX;E[ze+1]=posY;E[ze+2]=posZ;E[ze+3]=Math.random();R[ze+0]=(Math.random()-0.5)*0.4;R[ze+1]=(Math.random()-0.5)*0.4;R[ze+2]=(Math.random()-0.5)*0.4;R[ze+3]=1;P[ze+0]=N.r;P[ze+1]=N.g;P[ze+2]=N.b;P[ze+3]=Oe;D[ze+0]=Ue;D[ze+1]=Math.random()*Math.PI*2;D[ze+2]=bt;D[ze+3]=Mt;} const U=Pe=>{const ze=new ja(Pe,b,b,Vs,ws);return ze.minFilter=Jn,ze.magFilter=Jn,ze.generateMipmaps=!1,ze.needsUpdate=!0,ze},B=U(E),I=U(R),O=U(P),V=U(D),K={minFilter:Jn,magFilter:Jn,format:Vs,type:A?Oo:ws,depthBuffer:!1,stencilBuffer:!1},J=[new ai(b,b,K),new ai(b,b,K)],oe=[new ai(b,b,K),new ai(b,b,K)],Q=new fm,q=new zf(-1,1,1,-1,-1,1),Y=new ri({glslVersion:lf,uniforms:{uSource:{value:null}},vertexShader:lT,fragmentShader:RY,depthWrite:!1,depthTest:!1}),$=new ri({glslVersion:lf,uniforms:{tPositions:{value:null},tVelocities:{value:null},tStaticDataB:{value:V},uTime:{value:0},uDelta:{value:0}},vertexShader:lT,fragmentShader:DY,depthWrite:!1,depthTest:!1}),ce=new ri({glslVersion:lf,uniforms:{tPositions:{value:null},tVelocities:{value:null},tSeedPositions:{value:B},tStaticDataB:{value:V},uTime:{value:0},uDelta:{value:0}},vertexShader:lT,fragmentShader:PY,depthWrite:!1,depthTest:!1}),be=new Xi(new dd(2,2),Y);Q.add(be);const X=new qt,te=new Float32Array(T*2),Re=new Float32Array(T*3);for(let Pe=0;Pe<T;Pe++){const ze=Pe%b,de=Math.floor(Pe/b);te[Pe*2+0]=(ze+.5)/b,te[Pe*2+1]=(de+.5)/b}return X.setAttribute("uv",new mn(te,2)),X.setAttribute("position",new mn(Re,3)),{size:b,fboCamera:q,fboScene:Q,fboQuad:be,velMat:$,posMat:ce,copyMat:Y,posFBOs:J,velFBOs:oe,tSeedPos:B,tSeedVel:I,tStaticDataA:O,tStaticDataB:V,renderGeo:X}},[p,t]);se.useLayoutEffect(()=>{m&&(m.fboQuad.material=m.copyMat,m.copyMat.uniforms.uSource.value=m.tSeedPos,i.setRenderTarget(m.posFBOs[0]),i.render(m.fboScene,m.fboCamera),i.setRenderTarget(m.posFBOs[1]),i.render(m.fboScene,m.fboCamera),m.copyMat.uniforms.uSource.value=m.tSeedVel,i.setRenderTarget(m.velFBOs[0]),i.render(m.fboScene,m.fboCamera),i.setRenderTarget(m.velFBOs[1]),i.render(m.fboScene,m.fboCamera),i.setRenderTarget(null))},[i,m]);const v=se.useMemo(()=>m?new ri({glslVersion:lf,transparent:!0,depthWrite:!1,blending:nc,uniforms:{tPositions:{value:null},tStaticDataA:{value:m.tStaticDataA},tStaticDataB:{value:m.tStaticDataB},uTime:{value:0},uGlobalOpacity:{value:0}},vertexShader:IY,fragmentShader:LY}):null,[m]),[_,x]=se.useMemo(()=>{if(t!==!1)return[null,null];const b=new qt,A=12e3,T=new Float32Array(A*3),E=new Float32Array(A*3),R=new ct;for(let D=0;D<A;D++){let pZ=-850+Math.random()*750,cX=Math.sin(pZ*0.0035+0.5)*190+Math.cos(pZ*0.0018)*60,cY=Math.cos(pZ*0.0042)*95+Math.sin(pZ*0.002)*40,dR=Math.pow(Math.random(),1.2)*120,an=Math.random()*Math.PI*2;T[D*3+0]=cX+Math.cos(an)*dR;T[D*3+1]=cY+Math.sin(an)*dR*0.65;T[D*3+2]=pZ;let r=Math.random();r<0.5?R.setRGB(0.18,0.28,0.58):(r<0.8?R.setRGB(0.25,0.58,0.95):(r<0.95?R.setRGB(0.52,0.28,0.88):R.setRGB(0.95,0.97,1.0)));E[D*3+0]=R.r;E[D*3+1]=R.g;E[D*3+2]=R.b;}b.setAttribute("position",new mn(T,3));b.setAttribute("color",new mn(E,3));const P=new ri({glslVersion:lf,transparent:!0,depthWrite:!1,blending:nc,uniforms:{uTime:{value:0}},vertexShader:NY,fragmentShader:UY});return[b,P]},[t]);return Bo((b,A)=>{if(s.current=Dn.lerp(s.current,e,A*2.2),d.current&&(d.current.visible=s.current>.001),s.current<.001,t===!1){x&&(x.uniforms.uTime.value=b.clock.elapsedTime);return}if(!m||!v)return;if(l.current+=A,a.current++,a.current%p.updateFrequency!==0){v.uniforms.uTime.value=b.clock.elapsedTime,v.uniforms.uGlobalOpacity.value=s.current;return}const T=Math.min(l.current,.1);l.current=0;const E=c.current,R=1-E;m.fboQuad.material=m.velMat,m.velMat.uniforms.tPositions.value=m.posFBOs[E].texture,m.velMat.uniforms.tVelocities.value=m.velFBOs[E].texture,m.velMat.uniforms.uTime.value=b.clock.elapsedTime,m.velMat.uniforms.uDelta.value=T,i.setRenderTarget(m.velFBOs[R]),i.render(m.fboScene,m.fboCamera),m.fboQuad.material=m.posMat,m.posMat.uniforms.tPositions.value=m.posFBOs[E].texture,m.posMat.uniforms.tVelocities.value=m.velFBOs[R].texture,m.posMat.uniforms.uTime.value=b.clock.elapsedTime,m.posMat.uniforms.uDelta.value=T,i.setRenderTarget(m.posFBOs[R]),i.render(m.fboScene,m.fboCamera),i.setRenderTarget(null),c.current=R,v.uniforms.tPositions.value=m.posFBOs[R].texture,v.uniforms.uTime.value=b.clock.elapsedTime,v.uniforms.uGlobalOpacity.value=s.current}),se.useEffect(()=>()=>{m&&(m.posFBOs.forEach(b=>b.dispose()),m.velFBOs.forEach(b=>b.dispose()),m.tSeedPos.dispose(),m.tSeedVel.dispose(),m.tStaticDataA.dispose(),m.tStaticDataB.dispose(),m.fboQuad.geometry.dispose(),m.renderGeo.dispose(),m.copyMat.dispose(),m.velMat.dispose(),m.posMat.dispose()),v&&v.dispose(),_&&_.dispose(),x&&x.dispose()},[m,v,_,x]),t===null?null:t===!1?Ce.jsx("points",{ref:d,geometry:_,frustumCulled:!1,children:Ce.jsx("primitive",{object:x,attach:"material"})}):Ce.jsx("points",{ref:d,geometry:m.renderGeo,frustumCulled:!1,children:Ce.jsx("primitive",{object:v,attach:"material"})})},ui=6,zY=()=>{let i=4,e=4,t=!1;return typeof navigator<"u"&&(i=navigator.hardwareConcurrency||4,e=navigator.deviceMemory||4,t=/Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)),{cores:i,mem:e,isMobile:t}};function BY(){const{cores:i,mem:e,isMobile:t}=zY();return t?8e5:e<=4||i<=4||e<=8||i<=8?5e6:15e6}const FY=`
 precision highp float;
 
 uniform float uTime;
