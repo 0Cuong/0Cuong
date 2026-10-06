@@ -10,7 +10,8 @@
     "dev": "node server.js",
     "start": "node server.js",
     "build": "node scripts/verify-static.mjs",
-    "check": "node scripts/verify-static.mjs"
+    "check": "npm run build && npm run visual:check",
+    "visual:check": "node scripts/verify-visual-pass.mjs"
   },
   "dependencies": {
     "express": "^4.21.2"

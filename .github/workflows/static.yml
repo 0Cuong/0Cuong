@@ -27,6 +27,9 @@ jobs:
       - name: Verify static application
         run: node scripts/verify-static.mjs
 
+      - name: Verify visual pass
+        run: node scripts/verify-visual-pass.mjs
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
