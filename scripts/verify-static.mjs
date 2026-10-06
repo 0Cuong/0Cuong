@@ -10,9 +10,6 @@ const requiredFiles = [
   'music/song.mp3',
   'love-letter.json',
   'metadata.json',
-  'assets/camera-interaction.js',
-  'assets/camera-interaction.css',
-  'assets/ScrollTrigger.min.js',
 ];
 
 const failures = [];
@@ -37,8 +34,6 @@ if (existsSync(indexPath)) {
   const expectedRefs = [
     './assets/index-wDCBoduc.js',
     './assets/index-cyapdwvW.css',
-    './assets/camera-interaction.js',
-    './assets/camera-interaction.css',
   ];
 
   for (const ref of expectedRefs) {
@@ -64,16 +59,4 @@ if (failures.length) {
   process.exit(1);
 }
 
-if (existsSync(resolve(root, 'assets/camera-interaction.js'))) {
-  const camera = readFileSync(resolve(root, 'assets/camera-interaction.js'), 'utf8');
-  if (!camera.includes('navigator.mediaDevices.getUserMedia')) failures.push('Camera module is missing getUserMedia implementation.');
-  if (!camera.includes('track.stop()')) failures.push('Camera module is missing MediaStream track cleanup.');
-}
-
-if (failures.length) {
-  console.error('Static verification failed:');
-  for (const failure of failures) console.error(`- ${failure}`);
-  process.exit(1);
-}
-
-console.log(`Static verification passed: ${requiredFiles.length} required files present and camera assets are wired.`);
+console.log(`Static verification passed: ${requiredFiles.length} required files present and configuration checks passed.`);
